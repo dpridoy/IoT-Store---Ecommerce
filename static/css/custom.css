@@ -94,3 +94,54 @@ body {
 .my_search_text {
     padding-top: 20px;
 }
+
+/* Cart page */
+
+.my_custom_table {
+    min-width: 400px;
+    font-size: 14px;
+}
+
+.my_custom_thead {
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    background-color: #f8f9fa!important;
+}
+
+.custom_image {
+    width: 100px;
+    height: 100px;
+}
+
+.custom_a {
+    text-decoration: none;
+}
+.custom_icon {
+    text-decoration: none;
+    color: #000!important;
+}
+.my_custom_button {
+    margin-top: 5px;
+}
+
+/* Stripe button */
+.stripe-button-el {
+    width: 100% !important;
+    display: block !important;
+    background-color: #868e96 !important;
+    border: 0px !important;
+    background-image: none !important;
+}
+.stripe-button-el span{
+    height: 36px !important;
+    line-height: 36px !important;
+    display: block;
+    position: relative;
+    padding: 0px 12px;
+    font-family: 'Roboto', sans-serif !important;
+    font-size: 16px !important;
+    color: #fff !important;
+    background-image: none !important;
+    background: none !important;
+}
