@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'search_app',
     'cart',
     'stripe',
+    'order',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -59,7 +61,7 @@ ROOT_URLCONF = 'iot_store.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'shop', 'templates/'), os.path.join(BASE_DIR, 'search_app', 'templates/'), os.path.join(BASE_DIR, 'cart', 'templates/')],
+        'DIRS': [os.path.join(BASE_DIR, 'shop', 'templates/'), os.path.join(BASE_DIR, 'search_app', 'templates/'), os.path.join(BASE_DIR, 'cart', 'templates/'), os.path.join(BASE_DIR, 'order', 'templates/')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,4 +138,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'static','media')
 # Stripe Setting
 STRIPE_PUBLISHABLE_KEY = 'pk_test_51Hknl8GT9cNxvADW27IADXqgN5W2p4QrQMlvTmv88OhwyDkHAsBG3vDXGgy1JrFfHFbyNG3RWA1g2PQ6YsBGNFzQ00HKyIF1oS'
 STRIPE_SECRET_KEY = 'sk_test_51Hknl8GT9cNxvADWAeR6iPowJDUUvE8pNriArx3ssKj0N0rRrgur0OgFpZPA8e66zIJxwvxOi67fbxsHtMFMwmZF00qH9uuMa0'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
+# Email message
+EMAIL_HOST='smtp.mailtrap.io'
+EMAIL_PORT='2525'
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = '5dbfd8399fb38e'
+EMAIL_HOST_PASSWORD = '19ccb1f98fe398'

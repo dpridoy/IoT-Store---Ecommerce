@@ -4,6 +4,9 @@ from .models import Cart, CartItem
 from django.core.exceptions import ObjectDoesNotExist
 import stripe
 from django.conf import settings
+from order.models import Order, OrderItem
+from django.template.loader import get_template
+from django.core.mail import EmailMessage
 
 def _cart_id(request):
     cart = request.session.session_key
@@ -50,8 +53,19 @@ def cart_detail(request,total=0,counter=0,cart_items=None):
     if request.method =='POST':
         # print(request.POST)
         try:
-            token=request.POST['stripeToken']
-            email=request.POST['stripeEmail']
+            token = request.POST['stripeToken']
+            email = request.POST['stripeEmail']
+            billingName = request.POST['stripeBillingName']
+            billingAddress = request.POST['stripeBillingAddressLine1']
+            billingCity = request.POST['stripeBillingAddressCity']
+            billingPostcode = request.POST['stripeBillingAddressZip']
+            billingCountry = request.POST['stripeBillingAddressCountryCode']
+            shippingName = request.POST['stripeShippingName']
+            shippingAddress = request.POST['stripeShippingAddressLine1']
+            shippingCity = request.POST['stripeShippingAddressCity']
+            shippingPostcode = request.POST['stripeShippingAddressZip']
+            shippingCountry = request.POST['stripeShippingAddressCountryCode']
+            
             customer=stripe.Customer.create(
                 email=email,
                 source=token
@@ -62,6 +76,48 @@ def cart_detail(request,total=0,counter=0,cart_items=None):
                 description=description,
                 customer=customer.id
             )
+            # creating order
+            try:
+                order_details = Order.objects.create(
+                    token = token,
+                    total = total,
+                    emailAddress = email,
+                    billingName = billingName,
+                    billingAddress = billingAddress,
+                    billingCity = billingCity,
+                    billingPostcode = billingPostcode,
+                    billingCountry = billingCountry,
+                    shippingName = shippingName,
+                    shippingAddress = shippingAddress,
+                    shippingCity = shippingCity,
+                    shippingPostcode = shippingPostcode,
+                    shippingCountry = shippingCountry
+                    )
+                order_details.save()
+                for order_item in cart_items:
+                    oi = OrderItem.objects.create(
+                        product = order_item.product.name,
+                        quantity = order_item.quantity,
+                        price = order_item.product.price,
+                        order = order_details
+                        )
+                    oi.save()
+                    # reduce stock when is order placed and save
+                    products = Product.objects.get(id=order_item.product.id)
+                    products.stock = int(order_item.product.stock - order_item.quantity)
+                    products.save()
+                    order_item.delete()
+                    print('order created')
+
+                try:
+                    # send email func
+                    sendEmail(order_details.id)
+                    print('Email sent to the customer')
+                except IOError as e:
+                    return e
+                return redirect('order:thanks',order_details.id)
+            except ObjectDoesNotExist:
+                pass
         except stripe.error.CardError as e:
             return False,e
     return render(request,'cart.html', dict(cart_items=cart_items,total=total,counter=counter, data_key=data_key, stripe_total=stripe_total,description=description))
@@ -83,3 +139,21 @@ def full_remove(request, product_id):
     cart_item=CartItem.objects.get(product=product, cart=cart)
     cart_item.delete()
     return redirect('cart:cart_detail')
+
+def sendEmail(order_id):
+    transaction = Order.objects.get(id=order_id)
+    order_items = OrderItem.objects.filter(order=transaction)
+    try:
+        subject = "IoT Store - New Order #{}".format(transaction.id)
+        to = ['{}'.format(transaction.emailAddress)]
+        from_email = "orders.milestonehomesltd.com"
+        order_information = {
+            'transaction' : transaction,
+            'order_items' : order_items
+        }
+        message = get_template('email/email.html').render(order_information)
+        msg = EmailMessage(subject, message, to=to, from_email=from_email)
+        msg.content_subtype = 'html'
+        msg.send()
+    except IOError as e:
+        return e
